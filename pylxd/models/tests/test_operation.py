@@ -193,3 +193,40 @@ class TestOperation(testing.PyLXDTestCase):
 
         self.assertEqual(2, mock_get.call_count)
         self.assertEqual("operation-abc", op.id)
+
+    def test_wait_error_with_null_metadata(self):
+        """wait() raises LXDAPIException when metadata is null but error is present."""
+        self.add_rule(
+            {
+                "text": json.dumps(
+                    {"type": "async", "metadata": None, "error": "Something went wrong"}
+                ),
+                "method": "GET",
+                "url": r"^http://pylxd.test/1.0/operations/operation-abc/wait$",
+            }
+        )
+
+        op = models.Operation.get(self.client, "operation-abc")
+        self.assertRaises(exceptions.LXDAPIException, op.wait)
+
+    def test_wait_status_code_failure(self):
+        """wait() raises LXDAPIException when status_code is non-2xx even without status=Failure."""
+        self.add_rule(
+            {
+                "text": json.dumps(
+                    {
+                        "type": "sync",
+                        "metadata": {
+                            "id": "operation-abc",
+                            "status": "Running",
+                            "status_code": 500,
+                        },
+                    }
+                ),
+                "method": "GET",
+                "url": r"^http://pylxd.test/1.0/operations/operation-abc/wait$",
+            }
+        )
+
+        op = models.Operation.get(self.client, "operation-abc")
+        self.assertRaises(exceptions.LXDAPIException, op.wait)
