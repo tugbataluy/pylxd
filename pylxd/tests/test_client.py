@@ -625,6 +625,26 @@ class TestWebsocketClient(TestCase):
         self.assertEqual({"test": "data"}, ws_client.messages[0])
 
 
+class TestWsExcludeOrigin:
+    """Tests for pylxd.client._ws_exclude_origin."""
+
+    @pytest.mark.parametrize(
+        "input_kwargs,expected",
+        [
+            ({}, ["origin"]),
+            ({"exclude_headers": ["upgrade"]}, ["upgrade", "origin"]),
+            (
+                {"exclude_headers": ["Origin"]},
+                ["Origin"],
+            ),  # already present, case-insensitive
+            ({"exclude_headers": None}, ["origin"]),
+        ],
+    )
+    def test_ws_exclude_origin(self, input_kwargs, expected):
+        client._ws_exclude_origin(input_kwargs)
+        assert input_kwargs["exclude_headers"] == expected
+
+
 class TestGetSessionForUrl(TestCase):
     """Tests for pylxd.client.get_session_for_url."""
 
