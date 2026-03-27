@@ -833,6 +833,11 @@ RULES = [
         "url": r"^http://pylxd.test/1.0/networks/eth(0|1|2)$",
     },
     {
+        "text": networks_POST,
+        "method": "POST",
+        "url": r"^http://pylxd.test/1.0/networks/eth(0|1|2)$",
+    },
+    {
         "text": json.dumps({"type": "sync"}),
         "method": "PUT",
         "url": r"^http://pylxd.test/1.0/networks/eth0$",
