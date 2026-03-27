@@ -133,7 +133,7 @@ class Network(model.Model):
         return networks
 
     @classmethod
-    def create(cls, client, name, description=None, type=None, config=None):
+    def create(cls, client, name, description=None, type=None, config=None, wait=True):
         """
         Create a network.
 
@@ -147,6 +147,8 @@ class Network(model.Model):
         :type type: str
         :param config: additional configuration
         :type config: dict
+        :param wait: Whether to wait for async operations to complete.
+        :type wait: bool
         """
         client.assert_has_api_extension("network")
 
@@ -160,20 +162,23 @@ class Network(model.Model):
         response = client.api.networks.post(json=network)
         # Handle async response: storage_and_network_operations extension
         # makes this endpoint return a background operation.
-        cls._handle_async_response_for_client(client, response, True)
+        cls._handle_async_response_for_client(client, response, wait)
         return cls.get(client, name)
 
-    def rename(self, new_name):
+    def rename(self, new_name, wait=True):
         """
         Rename a network.
 
         :param new_name: new name of the network
         :type new_name: str
+        :param wait: Whether to wait for async operations to complete.
+        :type wait: bool
         :return: Renamed network instance
         :rtype: :class:`Network`
         """
         self.client.assert_has_api_extension("network")
-        self.client.api.networks.post(json={"name": new_name})
+        response = self.api.post(json={"name": new_name})
+        self._handle_async_response(response, wait)
         return Network.get(self.client, new_name)
 
     def save(self, *args, **kwargs):
